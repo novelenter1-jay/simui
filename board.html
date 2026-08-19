@@ -28,6 +28,27 @@ button{font:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highl
 .primary{width:100%;background:var(--navy);color:#fff;border-radius:12px;padding:14px;font-size:16px;font-weight:800}
 .err{color:var(--no);font-size:13px;font-weight:600;margin:4px 0 8px;min-height:18px}
 .login{max-width:400px;margin:40px auto 0}
+/* 달력 */
+.cal{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head .title{font-size:16px;font-weight:800}
+.cal-head button{width:36px;height:36px;border-radius:10px;font-size:18px;color:var(--navy);font-weight:800}
+.cal-head button:active{background:var(--teal-soft)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal-grid .dowh{font-size:11px;font-weight:700;color:var(--sub);padding:4px 0}
+.cal-grid .dowh:first-child{color:var(--no)}
+.cday{position:relative;padding:8px 0 16px;border-radius:10px;font-size:14px;font-weight:600;border:1.5px solid transparent}
+.cday.dim{color:#B9C2D4}
+.cday.today{outline:2px solid var(--teal)}
+.cday.has{background:#F0F5F6;cursor:pointer}
+.cday.has.met{background:var(--ok-soft)}
+.cday.has.warn{background:var(--hold-soft)}
+.cday.has.riskday{background:var(--no-soft)}
+.cday.sel{border-color:var(--navy);background:var(--navy)!important;color:#fff}
+.cday .cnt{position:absolute;bottom:3px;left:0;right:0;font-size:10px;font-weight:800;color:var(--sub)}
+.cday.met .cnt{color:var(--ok)} .cday.warn .cnt{color:var(--hold)} .cday.riskday .cnt{color:var(--no)} .cday.sel .cnt{color:#fff}
+.callegend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--sub);flex-wrap:wrap}
+.callegend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-2px}
 /* 필터 바 */
 .filters{display:flex;gap:8px;margin:4px 0 14px;flex-wrap:wrap;align-items:center}
 .filters select{border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;background:#fff;font-weight:700;color:var(--navy)}
@@ -117,7 +138,8 @@ const STCLS = { '출석':'ok','불출석':'no','미정':'hold' };
 
 let cfg = { quorum: 4, gansaHash: '', codeHash: {} };
 let rosters = {}, sessions = [], att = {};
-let fGansa = '전체', fDays = 30;
+let fGansa = '전체';
+let calMonth = null, selDate = null;
 
 async function boot(){
   await signInAnonymously(auth).catch(()=>{});
@@ -166,59 +188,111 @@ function calc(s){
 
 function render(){
   if (!sessions.length){ $('#app').innerHTML = '<div class="empty">다가오는 심의 일정이 없습니다.</div>'; return; }
-  const end = new Date(Date.now()+fDays*86400000);
-  const endS = `${end.getFullYear()}-${String(end.getMonth()+1).padStart(2,'0')}-${String(end.getDate()).padStart(2,'0')}`;
   const gansas = [...new Set(sessions.map(s=>s.gansa.replace(/\s*[\[(].*$/,'').trim()).filter(Boolean))].sort();
-  let list = sessions.filter(s=>!s.cancelled && s.date<=endS);
+  let list = sessions.filter(s=>!s.cancelled);
   if (fGansa!=='전체') list = list.filter(s=>s.gansa.includes(fGansa));
-  let nMet=0,nRisk=0,nWait=0;
-  list.forEach(s=>{ const c=calc(s); if(c.met)nMet++; else if(c.risk)nRisk++; else nWait++; });
+
   const byDate = {};
   list.forEach(s=>{ (byDate[s.date] ||= []).push(s); });
-  const dowMap = {};
-  list.forEach(s=>dowMap[s.date]=s.dow);
+  const dates = Object.keys(byDate).sort();
+
+  // 기본 선택: 오늘 또는 다음 심의일
+  const t = todayStr();
+  if (!selDate || !byDate[selDate]) selDate = dates.find(d=>d>=t) || dates[0] || null;
+  if (!calMonth) calMonth = (selDate || t).slice(0,7);
+
+  // 요약
+  let nMet=0,nRisk=0,nWait=0;
+  list.forEach(s=>{ const c=calc(s); if(c.met)nMet++; else if(c.risk)nRisk++; else nWait++; });
+
+  // 달력
+  const [y,m] = calMonth.split('-').map(Number);
+  const start = new Date(y, m-1, 1).getDay();
+  const dim = new Date(y, m, 0).getDate();
+  let cells = ['일','월','화','수','목','금','토'].map(d=>`<div class="dowh">${d}</div>`).join('');
+  for (let i=0;i<start;i++) cells += '<div class="cday dim"></div>';
+  for (let d=1; d<=dim; d++){
+    const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ss = byDate[ds] || [];
+    let dayCls = '';
+    if (ss.length){
+      const cs = ss.map(calc);
+      dayCls = cs.some(c=>c.risk) ? 'riskday' : (cs.every(c=>c.met) ? 'met' : 'warn');
+    }
+    cells += `<div class="cday ${ss.length?'has '+dayCls:''} ${ds===t?'today':''} ${ds===selDate?'sel':''}" ${ss.length?`data-d="${ds}"`:''}>${d}${ss.length?`<div class="cnt">${ss.length}건</div>`:''}</div>`;
+  }
+
+  // 선택 날짜 상세
+  let detail = '<div class="empty">달력에서 날짜를 선택하세요.</div>';
+  if (selDate && byDate[selDate]){
+    const [sy,sm,sd] = selDate.split('-');
+    const daySs = byDate[selDate].sort((a,b)=>(a.time+a.sub).localeCompare(b.time+b.sub));
+    detail = `<div class="dhead">${parseInt(sm)}월 ${parseInt(sd)}일 (${esc(daySs[0].dow||'')}) · ${daySs.length}건<div class="bar"></div></div>` +
+      daySs.map(s=>{
+        const c = calc(s);
+        let qc='';
+        for (let i=0;i<c.total;i++) qc += `<div class="q-cell ${i<c.ok.length?'ok': i<c.ok.length+c.no.length?'no': i<c.ok.length+c.no.length+c.hold.length?'hold':''}"></div>`;
+        const vl = c.met?`<span class="vlabel met">정족수 충족 ${c.ok.length}/${c.total}</span>`
+                 : c.risk?`<span class="vlabel risk">미달 위험 · 불출석 ${c.no.length}명</span>`
+                 : `<span class="vlabel wait">출석 ${c.ok.length}/${c.total} · ${c.q}명 필요</span>`;
+        const chips = c.members.map(mm=>{
+          const a = c.a[mm.name];
+          const cls = a?STCLS[a.status]:'';
+          return `<div class="mchip ${cls}">${mm.chair?'★ ':''}${esc(mm.name)}<span class="rs">${a?esc(a.status)+(a.reason?`·${esc(a.reason)}`:''):'미응답'}</span></div>`;
+        }).join('');
+        return `<div class="sess ${c.risk?'risk':''}">
+          <div class="top">
+            <span class="time">${esc(s.time)}</span>
+            ${s.room?`<span class="room">${esc(s.room)}</span>`:''}
+            <span class="subno">${s.sub}소위</span>
+            <span class="gansa">간사 ${esc(s.gansa)}</span>
+            <span class="no">${esc(s.simui)}</span>
+          </div>
+          <div class="school">${esc(s.school)}</div>
+          <div class="verdict"><div class="q-cells">${qc}</div>${vl}</div>
+          <div class="mgrid">${chips}</div>
+        </div>`;
+      }).join('');
+  }
+
   $('#app').innerHTML = `
     <div class="filters">
       <select id="fg">${['전체',...gansas].map(g=>`<option ${g===fGansa?'selected':''}>${esc(g)}</option>`).join('')}</select>
-      <select id="fd">${[[14,'2주'],[30,'한 달'],[60,'두 달']].map(([v,l])=>`<option value="${v}" ${v===fDays?'selected':''}>${l}</option>`).join('')}</select>
-      <span class="cnt">${list.length}건 표시</span>
+      <span class="cnt">간사를 선택하면 달력도 함께 좁혀집니다</span>
     </div>
     <div class="summary">
       <div class="s met"><div class="n">${nMet}</div><div class="l">정족수 충족</div></div>
       <div class="s wait"><div class="n">${nWait}</div><div class="l">확인 중</div></div>
       <div class="s risk"><div class="n">${nRisk}</div><div class="l">미달 위험</div></div>
-    </div>` +
-    Object.keys(byDate).sort().map(d=>{
-      const [y,m,dd] = d.split('-');
-      return `<div class="dhead">${parseInt(m)}월 ${parseInt(dd)}일 (${esc(dowMap[d]||'')})<div class="bar"></div></div>` +
-        byDate[d].map(s=>{
-          const c = calc(s);
-          let cells='';
-          for (let i=0;i<c.total;i++) cells += `<div class="q-cell ${i<c.ok.length?'ok': i<c.ok.length+c.no.length?'no': i<c.ok.length+c.no.length+c.hold.length?'hold':''}"></div>`;
-          const vl = c.met?`<span class="vlabel met">정족수 충족 ${c.ok.length}/${c.total}</span>`
-                   : c.risk?`<span class="vlabel risk">미달 위험 · 불출석 ${c.no.length}명</span>`
-                   : `<span class="vlabel wait">출석 ${c.ok.length}/${c.total} · ${c.q}명 필요</span>`;
-          const chips = c.members.map(m=>{
-            const a = c.a[m.name];
-            const cls = a?STCLS[a.status]:'';
-            return `<div class="mchip ${cls}">${m.chair?'★ ':''}${esc(m.name)}<span class="rs">${a?esc(a.status)+(a.reason?`·${esc(a.reason)}`:''):'미응답'}</span></div>`;
-          }).join('');
-          return `<div class="sess ${c.risk?'risk':''}">
-            <div class="top">
-              <span class="time">${esc(s.time)}</span>
-              ${s.room?`<span class="room">${esc(s.room)}</span>`:''}
-              <span class="subno">${s.sub}소위</span>
-              <span class="gansa">간사 ${esc(s.gansa)}</span>
-              <span class="no">${esc(s.simui)}</span>
-            </div>
-            <div class="school">${esc(s.school)}</div>
-            <div class="verdict"><div class="q-cells">${cells}</div>${vl}</div>
-            <div class="mgrid">${chips}</div>
-          </div>`;
-        }).join('');
-    }).join('');
-  $('#fg').onchange = e=>{ fGansa=e.target.value; render(); };
-  $('#fd').onchange = e=>{ fDays=parseInt(e.target.value,10); render(); };
+    </div>
+    <div class="cal">
+      <div class="cal-head">
+        <button id="pm" aria-label="이전 달">‹</button>
+        <div class="title">${y}년 ${m}월</div>
+        <button id="nm" aria-label="다음 달">›</button>
+      </div>
+      <div class="cal-grid">${cells}</div>
+      <div class="callegend">
+        <span><i style="background:var(--ok-soft);border:1px solid #BFE3CD"></i>전건 충족</span>
+        <span><i style="background:var(--hold-soft);border:1px solid #EAD3A8"></i>확인 중 포함</span>
+        <span><i style="background:var(--no-soft);border:1px solid #F0C4C0"></i>미달 위험 포함</span>
+      </div>
+    </div>
+    <div id="dayDetail">${detail}</div>`;
+
+  $('#fg').onchange = e=>{ fGansa=e.target.value; selDate=null; render(); };
+  $('#pm').onclick = ()=>{ shiftMonth(-1); };
+  $('#nm').onclick = ()=>{ shiftMonth(1); };
+  function shiftMonth(dir){
+    let [yy,mm] = calMonth.split('-').map(Number);
+    mm += dir; if (mm<1){mm=12;yy--;} if(mm>12){mm=1;yy++;}
+    calMonth = `${yy}-${String(mm).padStart(2,'0')}`;
+    render();
+  }
+  $('#app').querySelectorAll('.cday.has').forEach(el=>el.onclick=()=>{
+    selDate = el.dataset.d; render();
+    document.getElementById('dayDetail')?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
 }
 boot();
 </script>
