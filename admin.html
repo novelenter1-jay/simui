@@ -364,7 +364,7 @@ async function loadBoard(){
   if (!sessions.length){ $('#board').innerHTML = '<div class="msg">기간 내 등록된 심의가 없습니다.</div>'; return; }
   $('#board').innerHTML = `<table><thead><tr>
     <th>날짜</th><th>시간</th><th>소위</th><th>간사</th><th>심의번호</th><th>학교</th>
-    <th>출석</th><th>불출석</th><th>미정</th><th>미응답</th><th>판정</th><th>불출석 위원(사유)</th></tr></thead><tbody>` +
+    <th>출석</th><th>불출석</th><th>미정</th><th>미응답</th><th>판정</th><th>불출석 위원(사유)</th><th>관리</th></tr></thead><tbody>` +
     sessions.map(s=>{
       const members = (rosters[s.sub]?.members||[]).map(m=>m.name);
       const total = members.length || 7;
@@ -381,8 +381,25 @@ async function loadBoard(){
       return `<tr class="${cls}"><td>${s.date.slice(5)}(${esc(s.dow)})</td><td>${esc(s.time)}</td><td>${s.sub}</td><td>${esc(s.gansa)}</td>
         <td>${esc(s.simui)}</td><td>${esc(s.school)}</td>
         <td class="stat-ok">${ok.length}</td><td class="stat-no">${no.length}</td><td class="stat-hold">${hold.length}</td><td>${none.length}</td>
-        <td>${verdict}</td><td class="small">${no.map(n=>esc(n)+(a[n].reason?`(${esc(a[n].reason)})`:'')).join(', ')}</td></tr>`;
+        <td>${verdict}</td><td class="small">${no.map(n=>esc(n)+(a[n].reason?`(${esc(a[n].reason)})`:'')).join(', ')}</td>
+        <td><button class="ghostbtn" style="padding:4px 10px;font-size:12px" data-reset="${s.id}" data-sub="${s.sub}">응답 초기화</button></td></tr>`;
     }).join('') + '</tbody></table>';
+  $('#board').querySelectorAll('[data-reset]').forEach(b=>b.onclick=async ()=>{
+    const sid = b.dataset.reset, sub = b.dataset.sub;
+    const resp = Object.keys(att[sid]||{});
+    if (!resp.length){ alert('이 심의에는 아직 응답이 없습니다.'); return; }
+    const name = prompt(`응답을 지울 위원 성함을 입력하세요.\n(전체 초기화는 "전체" 입력)\n\n현재 응답: ${resp.join(', ')}`);
+    if (!name) return;
+    try {
+      const targets = name.trim()==='전체' ? resp : [name.trim()];
+      for (const t of targets){
+        if (!att[sid][t]){ alert(`'${t}' 위원의 응답이 없습니다.`); continue; }
+        await deleteDoc(doc(db,'attendance',`${sid}_${sub}_${t}`));
+      }
+      alert('초기화되었습니다.');
+      loadBoard();
+    } catch(e){ alert('삭제 실패: '+e.message); }
+  });
 }
 $('#refreshBoard').onclick = loadBoard;
 $('#range').onchange = loadBoard;

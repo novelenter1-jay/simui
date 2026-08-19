@@ -129,7 +129,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highl
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, onSnapshot, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ▼▼▼ Firebase 콘솔에서 복사한 config를 붙여넣으세요 ▼▼▼
@@ -410,8 +410,16 @@ function bindMain(){
 
 async function save(sessionId, status, reason, card){
   const prev = state.attendance[sessionId]?.[state.name];
-  const finalReason = status==='불출석' ? (reason ?? prev?.reason ?? '') : '';
   const docId = `${sessionId}_${state.sub}_${state.name}`;
+  // 이미 선택된 상태를 다시 누르면 응답 취소(미응답으로 되돌림)
+  if (prev && prev.status === status && reason == null){
+    try {
+      await deleteDoc(doc(db,'attendance',docId));
+      toast('응답이 취소되었습니다 (미응답)');
+    } catch(e){ toast('취소 실패 — 네트워크를 확인하세요'); }
+    return;
+  }
+  const finalReason = status==='불출석' ? (reason ?? prev?.reason ?? '') : '';
   try {
     await setDoc(doc(db,'attendance',docId), {
       session: sessionId, sub: state.sub, name: state.name,
