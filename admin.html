@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>심의일정 관리자</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="xlsxlite.js"></script>
+<script src="parser.js"></script>
+<style>
+:root{
+  --navy:#14306B; --navy-deep:#0D2350; --teal:#0E7C86; --teal-soft:#E3F1F2;
+  --bg:#F4F6FA; --card:#fff; --ink:#1B2233; --sub:#5A657D; --line:#E2E7F0;
+  --ok:#1D8A4E; --no:#C4372F; --hold:#B57A0F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer;border:none;background:none}
+.top{background:linear-gradient(120deg,var(--navy-deep),var(--navy) 55%,var(--teal));color:#fff;padding:16px 24px;display:flex;align-items:center;gap:14px}
+.top h1{font-size:17px;font-weight:800}
+.top .sub{font-size:12px;opacity:.8}
+.top .me{margin-left:auto;font-size:13px;opacity:.9}
+.top .out{color:#fff;text-decoration:underline;font-size:12px;opacity:.75}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 20px 80px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 18px;font-size:14px;font-weight:700;color:var(--sub)}
+.tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px}
+.panel h2{font-size:16px;font-weight:800;margin-bottom:4px}
+.panel .desc{font-size:13px;color:var(--sub);margin-bottom:14px}
+.drop{border:2px dashed #B9C6DE;border-radius:12px;padding:34px;text-align:center;color:var(--sub);font-size:14px;font-weight:600;background:#FAFBFE;cursor:pointer}
+.drop.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal)}
+.primary{background:var(--navy);color:#fff;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:800}
+.primary:disabled{opacity:.4}
+.ghostbtn{border:1.5px solid var(--line);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;color:var(--sub);background:#fff}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.field{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px}
+.field:focus{outline:2px solid var(--teal)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+th{background:#F0F3F9;color:var(--navy);font-weight:800;padding:8px;border:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border:1px solid var(--line);vertical-align:top}
+td[contenteditable]{background:#FFFDF2}
+.cx{color:var(--no);font-weight:800}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chips label{border:1.5px solid var(--line);border-radius:99px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;background:#fff}
+.chips input{margin-right:6px}
+.chips label.on{border-color:var(--teal);color:var(--teal);background:var(--teal-soft)}
+.msg{font-size:13px;font-weight:700;margin-top:10px;min-height:18px}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--no)}
+.risk{background:#FBEAE8}
+.warn{background:#FBF2DF}
+.stat-ok{color:var(--ok);font-weight:800}.stat-no{color:var(--no);font-weight:800}.stat-hold{color:var(--hold);font-weight:800}
+.small{font-size:12px;color:var(--sub)}
+.codegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:12px}
+.codegrid .cg{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.codegrid .cg b{width:46px;color:var(--navy)}
+.codegrid input{flex:1;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;font-size:13px}
+.login{max-width:380px;margin:70px auto}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="top">
+  <div><h1>심의일정 관리자</h1><div class="sub">화성오산교육지원청 생활교육과 · 학교폭력대책심의위원회</div></div>
+  <div class="me hide" id="me"></div><button class="out hide" id="logout">로그아웃</button>
+</div>
+<div class="wrap">
+  <!-- 로그인 -->
+  <div id="loginView" class="login panel">
+    <h2>관리자 로그인</h2>
+    <div class="desc">Firebase Authentication에 등록한 관리자 계정으로 로그인하세요.</div>
+    <input class="field" style="width:100%;margin-bottom:8px" id="email" type="email" placeholder="이메일" autocomplete="username">
+    <input class="field" style="width:100%;margin-bottom:8px" id="pw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <div class="msg err" id="loginMsg"></div>
+    <button class="primary" style="width:100%" id="loginBtn">로그인</button>
+  </div>
+
+  <div id="main" class="hide">
+    <div class="tabs">
+      <button data-t="sched" class="on">① 일정 업로드</button>
+      <button data-t="roster">② 명단 업로드</button>
+      <button data-t="codes">③ 소위 접속코드</button>
+      <button data-t="board">④ 출석 현황판</button>
+      <button data-t="cfg">⑤ 설정</button>
+    </div>
+
+    <!-- ① 일정 -->
+    <div class="panel tabview" id="t-sched">
+      <h2>심의일정 엑셀 업로드</h2>
+      <div class="desc">평소 쓰시는 <b>심의일정 엑셀(한셀 저장본 그대로)</b>을 끌어다 놓으면 됩니다. 월 시트를 자동 인식하고, 학교 칸의 전화번호는 자동 제거됩니다. 같은 심의번호는 갱신되며 <b>위원들이 이미 체크한 출석 정보는 지워지지 않습니다.</b></div>
+      <div class="drop" id="dropS">여기에 엑셀 파일을 끌어다 놓거나 클릭하여 선택</div>
+      <input type="file" id="fileS" accept=".xlsx" class="hide">
+      <div id="monthPick" class="hide">
+        <div class="desc" style="margin-top:14px">반영할 월을 선택하세요 (기본: 이번 달부터)</div>
+        <div class="chips" id="monthChips"></div>
+        <div class="msg" id="parseMsg"></div>
+        <div id="preview" style="max-height:420px;overflow:auto"></div>
+        <div class="row">
+          <button class="primary" id="pubS" disabled>선택한 월 게시하기</button>
+          <span class="small">게시 시 선택 월의 기존 등록분 중 이번 파일에 없는 건은 삭제 여부를 물어봅니다. 미리보기의 <b>학교 표기 칸은 클릭해 수정</b>할 수 있습니다.</span>
+        </div>
+        <div class="msg" id="pubMsg"></div>
+      </div>
+    </div>
+
+    <!-- ② 명단 -->
+    <div class="panel tabview hide" id="t-roster">
+      <h2>소위별 위원 명단 업로드</h2>
+      <div class="desc">「소위원회 구성」 엑셀을 끌어다 놓으세요. <b>성명·위원구분·간사·요일만 저장되며 연락처와 이메일은 서버에 올라가지 않습니다.</b> 명단이 바뀌면 새 파일을 다시 올리면 됩니다.</div>
+      <div class="drop" id="dropR">여기에 구성 엑셀 파일을 끌어다 놓거나 클릭하여 선택</div>
+      <input type="file" id="fileR" accept=".xlsx" class="hide">
+      <div id="rosterPrev"></div>
+      <div class="row"><button class="primary hide" id="pubR">명단 게시하기</button></div>
+      <div class="msg" id="rosterMsg"></div>
+    </div>
+
+    <!-- ③ 코드 -->
+    <div class="panel tabview hide" id="t-codes">
+      <h2>소위별 접속 코드</h2>
+      <div class="desc">위원들이 입력할 소위별 코드입니다. 서버에는 <b>암호화(해시)된 값만 저장</b>되므로, 아래 평문 코드는 이 브라우저에만 보관됩니다. 저장 후 코드 목록을 복사해 안전한 곳에 따로 보관하세요.</div>
+      <div class="row">
+        <button class="ghostbtn" id="genCodes">전체 자동 생성</button>
+        <button class="ghostbtn" id="copyCodes">코드 목록 복사</button>
+        <button class="primary" id="saveCodes">코드 저장(게시)</button>
+      </div>
+      <div class="codegrid" id="codeGrid"></div>
+      <div class="msg" id="codeMsg"></div>
+    </div>
+
+    <!-- ④ 현황판 -->
+    <div class="panel tabview hide" id="t-board">
+      <h2>출석 응답 현황판</h2>
+      <div class="desc">다가오는 심의별 응답 현황입니다. <span class="stat-no">빨간 행</span>은 정족수 미달 위험(불출석으로 재적−불출석 &lt; 정족수), <span class="stat-hold" style="background:#FBF2DF;padding:1px 4px">노란 행</span>은 아직 정족수 미확보입니다. 간사님들과 이 화면을 함께 보시면 됩니다.</div>
+      <div class="row">
+        기간: <select class="field" id="range"><option value="14">2주</option><option value="30" selected>한 달</option><option value="60">두 달</option></select>
+        <button class="ghostbtn" id="refreshBoard">새로고침</button>
+      </div>
+      <div id="board"></div>
+    </div>
+
+    <!-- ⑤ 설정 -->
+    <div class="panel tabview hide" id="t-cfg">
+      <h2>설정</h2>
+      <div class="row">정족수(출석 필요 인원): <input class="field" id="quorum" type="number" min="1" max="7" style="width:80px" value="4"> 명</div>
+      <div class="row" style="align-items:flex-start">하단 안내문(간사 성함·연락처 등):<br></div>
+      <textarea class="field" id="contact" style="width:100%;min-height:70px" placeholder="예) 문의: 생활교육과 학교폭력제로센터 031-000-0000"></textarea>
+      <div class="row"><button class="primary" id="saveCfg">설정 저장</button></div>
+      <div class="msg" id="cfgMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, getDocs, deleteDoc, collection, query, where, writeBatch, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ▼▼▼ index.html과 동일한 Firebase config를 붙여넣으세요 ▼▼▼
+const firebaseConfig = {
+  apiKey: "AIzaSyACkEi9M-WQMJQbTfCvEdJJHiJpz-8MrZw",
+  authDomain: "simui-attend.firebaseapp.com",
+  projectId: "simui-attend",
+  storageBucket: "simui-attend.firebasestorage.app",
+  messagingSenderId: "430424190125",
+  appId: "1:430424190125:web:f61e98821df18639ca2a24"
+};
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function sha256(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+const todayStr = ()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+
+// ===== 로그인 =====
+$('#loginBtn').onclick = async ()=>{
+  try { await signInWithEmailAndPassword(auth, $('#email').value.trim(), $('#pw').value); }
+  catch(e){ $('#loginMsg').textContent = '로그인 실패: 이메일/비밀번호를 확인하세요.'; }
+};
+$('#pw').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#loginBtn').click(); });
+$('#logout').onclick = ()=>signOut(auth);
+onAuthStateChanged(auth, u=>{
+  $('#loginView').classList.toggle('hide', !!u);
+  $('#main').classList.toggle('hide', !u);
+  $('#me').classList.toggle('hide', !u);
+  $('#logout').classList.toggle('hide', !u);
+  if (u){ $('#me').textContent = u.email; loadCfg(); renderCodeGrid(); loadBoard(); }
+});
+
+// ===== 탭 =====
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on', x===b));
+  document.querySelectorAll('.tabview').forEach(v=>v.classList.add('hide'));
+  $('#t-'+b.dataset.t).classList.remove('hide');
+  if (b.dataset.t==='board') loadBoard();
+});
+
+// ===== 공용: xlsx 읽기 =====
+async function readXlsx(file){
+  const zip = await JSZip.loadAsync(file);
+  const entries = {};
+  await Promise.all(Object.keys(zip.files).map(async k=>{
+    if (k.endsWith('.xml') || k.endsWith('.rels')) entries[k] = await zip.files[k].async('string');
+  }));
+  return xlsxlite.readWorkbook(entries);
+}
+function bindDrop(dropId, fileId, handler){
+  const drop = $(dropId), file = $(fileId);
+  drop.onclick = ()=>file.click();
+  file.onchange = ()=>{ if(file.files[0]) handler(file.files[0]); file.value=''; };
+  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.add('on');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove('on');}));
+  drop.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) handler(f); });
+}
+
+// ===== ① 일정 업로드 =====
+let parsedByMonth = {}; // {'2026.9월': [sessions]}
+bindDrop('#dropS','#fileS', async file=>{
+  $('#parseMsg').textContent = '파일 읽는 중…'; $('#parseMsg').className='msg';
+  try {
+    const wb = await readXlsx(file);
+    const months = wb.sheetNames.filter(n=>/^20\d\d\.\s*\d+월\s*$/.test(n));
+    if (!months.length) throw new Error('월 시트를 찾지 못했습니다');
+    parsedByMonth = {};
+    for (const m of months){
+      const ss = svparser.parseScheduleSheet(wb.getRows(m), m.trim());
+      if (ss.length) parsedByMonth[m.trim()] = ss;
+    }
+    const keys = Object.keys(parsedByMonth);
+    const mnum = k => { const m = k.match(/(\d{4})\.\s*(\d+)월/); return m ? (+m[1])*100 + (+m[2]) : 0; };
+    const curNum = (d=>d.getFullYear()*100+d.getMonth()+1)(new Date());
+    $('#monthChips').innerHTML = keys.map(k=>{
+      const checked = mnum(k) >= curNum ? 'checked' : '';
+      return `<label class="${checked?'on':''}"><input type="checkbox" value="${esc(k)}" ${checked}>${esc(k)} <span class="small">(${parsedByMonth[k].length}건)</span></label>`;
+    }).join('');
+    $('#monthPick').classList.remove('hide');
+    $('#parseMsg').textContent = `총 ${keys.length}개 월 시트 인식 완료`;
+    $('#parseMsg').className='msg ok';
+    $('#monthChips').querySelectorAll('input').forEach(i=>i.onchange=()=>{ i.closest('label').classList.toggle('on', i.checked); renderPreview(); });
+    renderPreview();
+  } catch(e){
+    $('#parseMsg').textContent = '읽기 실패: ' + e.message; $('#parseMsg').className='msg err';
+  }
+});
+function selectedMonths(){ return [...$('#monthChips').querySelectorAll('input:checked')].map(i=>i.value); }
+function renderPreview(){
+  const ms = selectedMonths();
+  const rows = ms.flatMap(m=>parsedByMonth[m]);
+  $('#pubS').disabled = !rows.length;
+  if (!rows.length){ $('#preview').innerHTML=''; return; }
+  $('#preview').innerHTML = `<table><thead><tr>
+    <th>날짜</th><th>요일</th><th>시간</th><th>소위</th><th>간사</th><th>심의번호</th><th>심의실</th><th>학교 표기 (클릭 수정)</th><th>급</th></tr></thead><tbody>` +
+    rows.map((s,i)=>`<tr>
+      <td>${s.date}</td><td>${esc(s.dow)}</td><td>${esc(s.time)}</td><td>${s.sub||'<span class="cx">?</span>'}</td>
+      <td>${esc(s.gansa)}</td><td>${esc(s.simui)}</td><td>${esc(s.room)}</td>
+      <td contenteditable data-id="${s.id}">${s.cancelled?'<span class="cx">[취소]</span> ':''}${esc(s.school)}</td>
+      <td>${esc(s.level)}</td></tr>`).join('') + '</tbody></table>';
+  $('#preview').querySelectorAll('[contenteditable]').forEach(td=>td.addEventListener('input',()=>{
+    const all = Object.values(parsedByMonth).flat();
+    const s = all.find(x=>x.id===td.dataset.id);
+    if (s) s.school = td.textContent.replace(/^\[취소\]\s*/,'').trim();
+  }));
+}
+$('#pubS').onclick = async ()=>{
+  const ms = selectedMonths();
+  const rows = ms.flatMap(m=>parsedByMonth[m]);
+  $('#pubMsg').textContent = '게시 중…'; $('#pubMsg').className='msg';
+  try {
+    // 기존 세션과 비교 → 삭제 대상
+    const stale = [];
+    for (const m of ms){
+      const snap = await getDocs(query(collection(db,'sessions'), where('month','==',m)));
+      const newIds = new Set(parsedByMonth[m].map(s=>s.id));
+      snap.forEach(d=>{ if(!newIds.has(d.id)) stale.push(d.id); });
+    }
+    if (stale.length && !confirm(`이번 파일에 없는 기존 등록 ${stale.length}건(${stale.slice(0,5).join(', ')}${stale.length>5?'…':''})을 삭제할까요?\n"취소"하면 삭제 없이 갱신만 합니다.`)) stale.length = 0;
+    // batch write (400개 단위)
+    let batch = writeBatch(db), n = 0;
+    const commitIf = async f => { if (n >= 400 || f){ await batch.commit(); batch = writeBatch(db); n = 0; } };
+    for (const s of rows){ batch.set(doc(db,'sessions',s.id), {...s, updatedAt: serverTimestamp()}); n++; await commitIf(); }
+    for (const id of stale){ batch.delete(doc(db,'sessions',id)); n++; await commitIf(); }
+    await batch.commit();
+    $('#pubMsg').textContent = `게시 완료 — ${rows.length}건 반영${stale.length?`, ${stale.length}건 삭제`:''}. 위원 화면에 즉시 표시됩니다.`;
+    $('#pubMsg').className='msg ok';
+  } catch(e){ $('#pubMsg').textContent = '게시 실패: '+e.message; $('#pubMsg').className='msg err'; }
+};
+
+// ===== ② 명단 =====
+let parsedRoster = null;
+bindDrop('#dropR','#fileR', async file=>{
+  $('#rosterMsg').textContent=''; 
+  try {
+    const wb = await readXlsx(file);
+    const sheet = wb.sheetNames.find(n=>n.includes('소위별')) || wb.sheetNames[0];
+    parsedRoster = svparser.parseRosterSheet(wb.getRows(sheet));
+    if (!parsedRoster.length) throw new Error('소위 명단을 인식하지 못했습니다');
+    $('#rosterPrev').innerHTML = `<table><thead><tr><th>소위</th><th>요일</th><th>간사</th><th>위원 (★소위원장)</th></tr></thead><tbody>` +
+      parsedRoster.map(s=>`<tr><td>${s.sub}</td><td>${esc(s.dow)}</td><td>${esc(s.gansa)}</td>
+        <td>${s.members.map(m=>(m.chair?'★':'')+esc(m.name)).join(', ')} <span class="small">(${s.members.length}명)</span></td></tr>`).join('') + '</tbody></table>';
+    $('#pubR').classList.remove('hide');
+  } catch(e){ $('#rosterMsg').textContent='읽기 실패: '+e.message; $('#rosterMsg').className='msg err'; }
+});
+$('#pubR').onclick = async ()=>{
+  try {
+    const batch = writeBatch(db);
+    for (const s of parsedRoster) batch.set(doc(db,'roster',String(s.sub)), {...s, updatedAt: serverTimestamp()});
+    batch.set(doc(db,'config','rosterAll'), { subs: parsedRoster.map(s=>({sub:s.sub, dow:s.dow, gansa:s.gansa})), updatedAt: serverTimestamp() });
+    await batch.commit();
+    $('#rosterMsg').textContent = `명단 게시 완료 — ${parsedRoster.length}개 소위`; $('#rosterMsg').className='msg ok';
+  } catch(e){ $('#rosterMsg').textContent='게시 실패: '+e.message; $('#rosterMsg').className='msg err'; }
+};
+
+// ===== ③ 코드 =====
+function localCodes(){ return JSON.parse(localStorage.getItem('sv_codes')||'{}'); }
+function renderCodeGrid(){
+  const codes = localCodes();
+  $('#codeGrid').innerHTML = Array.from({length:20},(_,i)=>{
+    const n = i+1;
+    return `<div class="cg"><b>${n}소위</b><input data-sub="${n}" value="${esc(codes[n]||'')}" placeholder="미설정" autocomplete="off"></div>`;
+  }).join('');
+}
+function randCode(){ const w=['소나무','한빛','두레','미르','가온','다솜','바다','하늘','노을','달빛','샘터','솔빛','누리','늘품','참빛','미리내','은하','새싹','청람','보람']; 
+  return w[Math.floor(Math.random()*w.length)] + String(Math.floor(1000+Math.random()*9000)); }
+$('#genCodes').onclick = ()=>{ $('#codeGrid').querySelectorAll('input').forEach(i=>{ if(!i.value.trim()) i.value=randCode(); }); };
+$('#copyCodes').onclick = ()=>{
+  const t = [...$('#codeGrid').querySelectorAll('input')].map(i=>`${i.dataset.sub}소위: ${i.value}`).join('\n');
+  navigator.clipboard.writeText(t); $('#codeMsg').textContent='복사되었습니다'; $('#codeMsg').className='msg ok';
+};
+$('#saveCodes').onclick = async ()=>{
+  const codes = {}, hashes = {};
+  for (const i of $('#codeGrid').querySelectorAll('input')){
+    const v = i.value.trim();
+    if (v){ codes[i.dataset.sub]=v; hashes[i.dataset.sub]=await sha256(v); }
+  }
+  try {
+    await setDoc(doc(db,'config','public'), { codeHash: hashes }, { merge: true });
+    localStorage.setItem('sv_codes', JSON.stringify(codes));
+    $('#codeMsg').textContent = `저장 완료 — ${Object.keys(hashes).length}개 소위 코드 게시됨`; $('#codeMsg').className='msg ok';
+  } catch(e){ $('#codeMsg').textContent='저장 실패: '+e.message; $('#codeMsg').className='msg err'; }
+};
+
+// ===== ④ 현황판 =====
+async function loadBoard(){
+  const days = parseInt($('#range').value,10);
+  const from = todayStr();
+  const toD = new Date(Date.now()+days*86400000);
+  const to = `${toD.getFullYear()}-${String(toD.getMonth()+1).padStart(2,'0')}-${String(toD.getDate()).padStart(2,'0')}`;
+  const [sSnap, aSnap, rSnap, pub] = await Promise.all([
+    getDocs(query(collection(db,'sessions'), where('date','>=',from), where('date','<=',to))),
+    getDocs(collection(db,'attendance')),
+    getDocs(collection(db,'roster')),
+    getDoc(doc(db,'config','public')),
+  ]);
+  const quorum = pub.exists() ? (pub.data().quorum||4) : 4;
+  const rosters = {}; rSnap.forEach(d=>rosters[d.data().sub]=d.data());
+  const att = {}; aSnap.forEach(d=>{ const a=d.data(); (att[a.session] ||= {})[a.name]=a; });
+  const sessions = sSnap.docs.map(d=>d.data()).filter(s=>!s.cancelled).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if (!sessions.length){ $('#board').innerHTML = '<div class="msg">기간 내 등록된 심의가 없습니다.</div>'; return; }
+  $('#board').innerHTML = `<table><thead><tr>
+    <th>날짜</th><th>시간</th><th>소위</th><th>간사</th><th>심의번호</th><th>학교</th>
+    <th>출석</th><th>불출석</th><th>미정</th><th>미응답</th><th>판정</th><th>불출석 위원(사유)</th></tr></thead><tbody>` +
+    sessions.map(s=>{
+      const members = (rosters[s.sub]?.members||[]).map(m=>m.name);
+      const total = members.length || 7;
+      const a = att[s.id]||{};
+      let ok=[],no=[],hold=[],none=[];
+      (members.length?members:Object.keys(a)).forEach(n=>{
+        const st=a[n]?.status;
+        if(st==='출석')ok.push(n); else if(st==='불출석')no.push(n); else if(st==='미정')hold.push(n); else none.push(n);
+      });
+      const risk = total-no.length < quorum;
+      const met = ok.length >= quorum;
+      const cls = risk?'risk':(met?'':'warn');
+      const verdict = met?'<span class="stat-ok">충족</span>':(risk?'<span class="stat-no">미달 위험</span>':'<span class="stat-hold">확인 중</span>');
+      return `<tr class="${cls}"><td>${s.date.slice(5)}(${esc(s.dow)})</td><td>${esc(s.time)}</td><td>${s.sub}</td><td>${esc(s.gansa)}</td>
+        <td>${esc(s.simui)}</td><td>${esc(s.school)}</td>
+        <td class="stat-ok">${ok.length}</td><td class="stat-no">${no.length}</td><td class="stat-hold">${hold.length}</td><td>${none.length}</td>
+        <td>${verdict}</td><td class="small">${no.map(n=>esc(n)+(a[n].reason?`(${esc(a[n].reason)})`:'')).join(', ')}</td></tr>`;
+    }).join('') + '</tbody></table>';
+}
+$('#refreshBoard').onclick = loadBoard;
+$('#range').onchange = loadBoard;
+
+// ===== ⑤ 설정 =====
+async function loadCfg(){
+  const pub = await getDoc(doc(db,'config','public'));
+  if (pub.exists()){ const d=pub.data(); $('#quorum').value=d.quorum||4; $('#contact').value=d.contact||''; }
+}
+$('#saveCfg').onclick = async ()=>{
+  try {
+    await setDoc(doc(db,'config','public'), { quorum: parseInt($('#quorum').value,10)||4, contact: $('#contact').value.trim() }, { merge:true });
+    $('#cfgMsg').textContent='저장 완료'; $('#cfgMsg').className='msg ok';
+  } catch(e){ $('#cfgMsg').textContent='저장 실패: '+e.message; $('#cfgMsg').className='msg err'; }
+};
+</script>
+</body>
+</html>

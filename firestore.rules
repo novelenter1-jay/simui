@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ▼ 관리자 이메일을 본인 계정으로 바꾸세요
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "admin@example.com";
+    }
+
+    // 심의일정: 누구나 읽기, 관리자만 쓰기
+    match /sessions/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 소위별 명단(성명·구분만): 누구나 읽기, 관리자만 쓰기
+    match /roster/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 공개 설정(코드 해시·정족수·안내문): 누구나 읽기, 관리자만 쓰기
+    match /config/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 출석 응답: 익명 로그인 사용자가 정해진 형식으로만 기록
+    match /attendance/{id} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasAll(['session','sub','name','status','reason','ts'])
+        && request.resource.data.status in ['출석','불출석','미정']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 100
+        && id == request.resource.data.session + '_' + string(request.resource.data.sub) + '_' + request.resource.data.name;
+      allow delete: if isAdmin();
+    }
+  }
+}
