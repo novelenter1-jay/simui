@@ -3,427 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>학교폭력대책심의위원회 심의일정</title>
+<title>학교폭력대책심의위원회 심의일정 안내</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{
   --navy:#14306B; --navy-deep:#0D2350; --teal:#0E7C86; --teal-soft:#E3F1F2;
-  --bg:#F4F6FA; --card:#FFFFFF; --ink:#1B2233; --sub:#5A657D; --line:#E2E7F0;
-  --ok:#1D8A4E; --ok-soft:#E5F4EB; --no:#C4372F; --no-soft:#FBEAE8; --hold:#B57A0F; --hold-soft:#FBF2DF;
-  --r:14px;
+  --bg:#F4F6FA; --card:#fff; --ink:#1B2233; --sub:#5A657D; --line:#E2E7F0;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.5}
-button{font:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highlight-color:transparent}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 60px}
-/* 헤더 */
-.hero{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 45%,var(--teal) 100%);color:#fff;padding:26px 16px 22px;border-radius:0 0 22px 22px}
-.hero .inner{max-width:560px;margin:0 auto}
-.hero .org{font-size:12px;letter-spacing:.08em;opacity:.85;font-weight:600}
-.hero h1{font-size:21px;font-weight:800;margin-top:6px;letter-spacing:-.01em}
-.hero .meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:99px;padding:4px 12px;font-size:13px;font-weight:700}
-.hero .who{font-size:14px;font-weight:600;opacity:.95}
-.hero .exit{margin-left:auto;font-size:12px;color:#fff;opacity:.75;text-decoration:underline}
-/* 단계 카드 */
-.stage{margin-top:20px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 1px 3px rgba(20,48,107,.06)}
-.panel h2{font-size:16px;font-weight:800;margin-bottom:4px}
-.panel .desc{font-size:13px;color:var(--sub);margin-bottom:14px}
-.subgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.subgrid button{border:1.5px solid var(--line);border-radius:12px;padding:12px 0;font-size:15px;font-weight:700;color:var(--navy);background:#fff}
-.subgrid button:active{background:var(--teal-soft);border-color:var(--teal)}
-.subgrid .dow{display:block;font-size:11px;font-weight:600;color:var(--sub);margin-top:2px}
-.field{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;margin-bottom:10px}
-.field:focus{outline:2px solid var(--teal);border-color:var(--teal)}
-.primary{width:100%;background:var(--navy);color:#fff;border-radius:12px;padding:14px;font-size:16px;font-weight:800}
-.primary:disabled{opacity:.45}
-.ghost{width:100%;color:var(--sub);padding:12px;font-size:14px;font-weight:600;margin-top:4px}
-.namegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.namegrid button{border:1.5px solid var(--line);border-radius:12px;padding:14px 8px;font-size:15px;font-weight:700;background:#fff}
-.namegrid button .role{display:block;font-size:11px;font-weight:600;color:var(--sub)}
-.namegrid button:active{background:var(--teal-soft);border-color:var(--teal)}
-.err{color:var(--no);font-size:13px;font-weight:600;margin:4px 0 8px;min-height:18px}
-/* 달력 */
-.cal{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:16px}
-.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.cal-head .title{font-size:16px;font-weight:800}
-.cal-head button{width:36px;height:36px;border-radius:10px;font-size:18px;color:var(--navy);font-weight:800}
-.cal-head button:active{background:var(--teal-soft)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
-.cal-grid .dowh{font-size:11px;font-weight:700;color:var(--sub);padding:4px 0}
-.cal-grid .dowh:first-child{color:var(--no)}
-.day{position:relative;padding:7px 0 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink)}
-.day.dim{color:#B9C2D4}
-.day.today{outline:2px solid var(--teal)}
-.day.has{background:var(--teal-soft);cursor:pointer}
-.day .dots{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:3px}
-.dot{width:6px;height:6px;border-radius:99px;background:#A9B4C9}
-.dot.ok{background:var(--ok)} .dot.no{background:var(--no)} .dot.hold{background:var(--hold)}
-.legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--sub);flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:4px}
-/* 세션 카드 */
-.list{margin-top:16px;display:flex;flex-direction:column;gap:12px}
-.sec-label{font-size:13px;font-weight:800;color:var(--navy);margin:18px 2px 0;letter-spacing:.02em}
-.sess{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 1px 3px rgba(20,48,107,.05)}
-.sess.cancelled{opacity:.6}
-.sess .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.sess .date{font-size:15px;font-weight:800}
-.sess .time{font-size:15px;font-weight:800;color:var(--teal)}
-.sess .room{font-size:12px;font-weight:700;color:var(--sub);background:var(--bg);border-radius:6px;padding:2px 8px}
-.sess .no{margin-left:auto;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
-.sess .school{margin-top:6px;font-size:15px;font-weight:700}
-.sess .school .cx{color:var(--no);font-size:12px;font-weight:800;border:1px solid var(--no);border-radius:6px;padding:1px 6px;margin-right:6px}
-/* 정족수 게이지 (시그니처) */
-.quorum{margin-top:12px}
-.q-row{display:flex;align-items:center;gap:8px}
-.q-cells{display:flex;gap:4px;flex:1}
-.q-cell{height:10px;flex:1;border-radius:4px;background:#E5EAF3;border:1px solid #D6DDEA}
-.q-cell.ok{background:var(--ok);border-color:var(--ok)}
-.q-cell.no{background:var(--no);border-color:var(--no)}
-.q-cell.hold{background:var(--hold);border-color:var(--hold)}
-.q-label{font-size:12px;font-weight:800;white-space:nowrap}
-.q-label.met{color:var(--ok)} .q-label.risk{color:var(--no)} .q-label.wait{color:var(--sub)}
-/* 내 응답 */
-.myrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.myrow button{border:1.5px solid var(--line);border-radius:11px;padding:11px 0;font-size:14px;font-weight:800;color:var(--sub);background:#fff}
-.myrow button.on-ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
-.myrow button.on-no{background:var(--no-soft);border-color:var(--no);color:var(--no)}
-.myrow button.on-hold{background:var(--hold-soft);border-color:var(--hold);color:var(--hold)}
-.reason{margin-top:8px;display:none;gap:6px;flex-wrap:wrap}
-.reason.show{display:flex}
-.reason button{border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--sub)}
-.reason button.on{background:var(--navy);border-color:var(--navy);color:#fff}
-.reason input{flex:1;min-width:120px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px}
-/* 전체 현황 토글 */
-.detail-toggle{margin-top:10px;font-size:12px;font-weight:700;color:var(--teal);padding:4px 0}
-.detail{display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:10px}
-.detail.show{display:block}
-.mline{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
-.mline .nm{font-weight:600}
-.mline .st{font-weight:700}
-.st.ok{color:var(--ok)} .st.no{color:var(--no)} .st.hold{color:var(--hold)} .st.none{color:#A9B4C9}
-.mline .rs{font-size:11px;color:var(--sub);font-weight:500}
-.empty{text-align:center;color:var(--sub);font-size:14px;padding:30px 0}
-.foot{margin-top:26px;text-align:center;font-size:12px;color:var(--sub);line-height:1.7}
-.saving{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;font-weight:700;border-radius:99px;padding:8px 18px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
-.saving.show{opacity:1}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+a{text-decoration:none;color:inherit}
+.hero{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 45%,var(--teal) 100%);color:#fff;padding:34px 20px 30px;border-radius:0 0 24px 24px;text-align:center}
+.hero .org{font-size:12px;letter-spacing:.1em;opacity:.85;font-weight:600}
+.hero h1{font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-.01em}
+.hero p{font-size:13px;opacity:.9;margin-top:6px}
+.wrap{max-width:520px;margin:0 auto;padding:20px 16px 50px}
+.notice{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14px;color:var(--ink);box-shadow:0 1px 3px rgba(20,48,107,.06)}
+.notice b{color:var(--navy)}
+.notice ul{margin:8px 0 0 18px;color:var(--sub);font-size:13px}
+.notice li{margin-top:4px}
+.doors{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.door{display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(20,48,107,.06);transition:transform .1s}
+.door:active{transform:scale(.985)}
+.door .ic{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.door.member .ic{background:var(--teal-soft)}
+.door.gansa .ic{background:#EAEFFA}
+.door .t{flex:1}
+.door .t b{font-size:17px;font-weight:800;display:block}
+.door .t span{font-size:13px;color:var(--sub)}
+.door .arrow{font-size:20px;color:var(--sub);font-weight:800}
+.door.member{border-color:var(--teal)}
+.door.member .t b{color:var(--teal)}
+.door.gansa .t b{color:var(--navy)}
+.adminlink{display:block;text-align:center;margin-top:26px;font-size:12px;color:var(--sub);text-decoration:underline}
+.foot{text-align:center;font-size:12px;color:var(--sub);margin-top:18px}
 </style>
 </head>
 <body>
-<div class="hero"><div class="inner">
+<div class="hero">
   <div class="org">화성오산교육지원청 생활교육과</div>
   <h1>학교폭력대책심의위원회<br>심의일정 · 출석 확인</h1>
-  <div class="meta" id="heroMeta"></div>
-</div></div>
-
-<div class="wrap">
-  <div id="app"><div class="empty">불러오는 중…</div></div>
-  <div class="foot" id="foot"></div>
+  <p>심의위원과 간사를 위한 심의일정 안내 페이지입니다</p>
 </div>
-<div class="saving" id="saving">저장되었습니다</div>
+<div class="wrap">
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  <!-- ▼ 안내 멘트: 이 부분의 문구는 자유롭게 수정하세요 ▼ -->
+  <div class="notice">
+    <b>이용 안내</b>
+    <ul>
+      <li><b>심의위원님</b>은 아래 [심의위원 출석 확인]에서 본인 소위를 선택해 안내받은 소위 코드로 접속한 뒤, 심의별로 출석 여부를 체크해 주세요.</li>
+      <li>불출석(기피 등) 사유가 있는 경우 미리 체크해 주시면 심의 운영에 큰 도움이 됩니다.</li>
+      <li><b>간사님</b>은 [간사용 현황판]에서 달력으로 담당 심의의 출석 현황을 확인할 수 있습니다.</li>
+      <li>심의 시간과 장소는 사정에 따라 변경될 수 있으며, 변경 시 이 페이지에 즉시 반영됩니다.</li>
+    </ul>
+  </div>
+  <!-- ▲ 안내 멘트 끝 ▲ -->
 
-// ▼▼▼ Firebase 콘솔에서 복사한 config를 붙여넣으세요 ▼▼▼
-const firebaseConfig = {
-  apiKey: "AIzaSyACkEi9M-WQMJQbTfCvEdJJHiJpz-8MrZw",
-  authDomain: "simui-attend.firebaseapp.com",
-  projectId: "simui-attend",
-  storageBucket: "simui-attend.firebasestorage.app",
-  messagingSenderId: "430424190125",
-  appId: "1:430424190125:web:f61e98821df18639ca2a24"
-};
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+  <div class="doors">
+    <a class="door member" href="member.html">
+      <div class="ic">🗳️</div>
+      <div class="t"><b>심의위원 출석 확인</b><span>소위 선택 → 출석 / 불출석 체크</span></div>
+      <div class="arrow">›</div>
+    </a>
+    <a class="door gansa" href="board.html">
+      <div class="ic">📅</div>
+      <div class="t"><b>간사용 현황판</b><span>달력으로 심의별 출석 현황 확인</span></div>
+      <div class="arrow">›</div>
+    </a>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const $ = s => document.querySelector(s);
-const appEl = $('#app');
-const STATUS = { '출석':'ok', '불출석':'no', '미정':'hold' };
-const REASONS = ['기피(회피) 사유','개인 일정','기타'];
-let state = {
-  sub: null, name: null,
-  roster: null, cfg: { quorum: 4, contact: '' },
-  sessions: [], attendance: {}, // attendance[sessionId][name] = {status, reason}
-  calMonth: null, unsubA: null,
-};
-const saved = JSON.parse(localStorage.getItem('sv_member') || 'null');
-
-async function sha256(t){
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
-  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-function toast(msg){ const el=$('#saving'); el.textContent=msg||'저장되었습니다'; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1400); }
-function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-
-async function boot(){
-  await signInAnonymously(auth).catch(()=>{});
-  const [pub, rosterAll] = await Promise.all([
-    getDoc(doc(db,'config','public')),
-    getDoc(doc(db,'config','rosterAll')),
-  ]);
-  if (pub.exists()) Object.assign(state.cfg, pub.data());
-  state.rosterAll = rosterAll.exists() ? rosterAll.data().subs : null;
-  $('#foot').innerHTML = esc(state.cfg.contact || '문의: 화성오산교육지원청 생활교육과');
-  if (saved && saved.sub && saved.name && sessionStorage.getItem('sv_ok')===String(saved.sub)){
-    state.sub = saved.sub; state.name = saved.name; enterMain();
-  } else if (saved && saved.sub){
-    renderCode(saved.sub, saved.name);
-  } else renderSubPick();
-}
-
-function renderSubPick(){
-  const subs = state.rosterAll || [];
-  const btns = subs.length
-    ? subs.map(s=>`<button data-sub="${s.sub}">${s.sub}소위<span class="dow">${esc(s.dow||'')}</span></button>`).join('')
-    : Array.from({length:20},(_,i)=>`<button data-sub="${i+1}">${i+1}소위</button>`).join('');
-  appEl.innerHTML = `<div class="stage"><div class="panel">
-    <h2>소속 소위원회를 선택하세요</h2>
-    <div class="desc">위촉 시 안내받은 본인 소위 번호를 누르면 됩니다.</div>
-    <div class="subgrid">${btns}</div>
-  </div></div>`;
-  appEl.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>renderCode(parseInt(b.dataset.sub,10)));
-}
-
-function renderCode(sub, presetName){
-  appEl.innerHTML = `<div class="stage"><div class="panel">
-    <h2>${sub}소위원회 접속</h2>
-    <div class="desc">안내받은 ${sub}소위 접속 코드를 입력하세요.</div>
-    <input class="field" id="code" type="password" inputmode="text" autocomplete="off" placeholder="접속 코드">
-    <div class="err" id="err"></div>
-    <button class="primary" id="go">확인</button>
-    <button class="ghost" id="back">← 소위 다시 선택</button>
-  </div></div>`;
-  $('#back').onclick = ()=>{ localStorage.removeItem('sv_member'); renderSubPick(); };
-  $('#go').onclick = async ()=>{
-    const code = $('#code').value.trim();
-    if (!code) return;
-    const hash = await sha256(code);
-    const expected = (state.cfg.codeHash||{})[String(sub)];
-    if (!expected){ $('#err').textContent = '이 소위는 아직 접속 코드가 등록되지 않았습니다. 간사에게 문의하세요.'; return; }
-    if (hash !== expected){ $('#err').textContent = '코드가 일치하지 않습니다.'; return; }
-    sessionStorage.setItem('sv_ok', String(sub));
-    state.sub = sub;
-    if (presetName){ state.name = presetName; enterMain(); }
-    else renderNamePick();
-  };
-  $('#code').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#go').click(); });
-}
-
-async function renderNamePick(){
-  const r = await getDoc(doc(db,'roster',String(state.sub)));
-  state.roster = r.exists() ? r.data() : { members: [] };
-  const ms = state.roster.members || [];
-  appEl.innerHTML = `<div class="stage"><div class="panel">
-    <h2>${state.sub}소위원회 · 본인 성함 선택</h2>
-    <div class="desc">본인 이름을 선택하면 다음부터 자동으로 접속됩니다.</div>
-    <div class="namegrid">${ms.map(m=>`<button data-n="${esc(m.name)}">${m.chair?'★ ':''}${esc(m.name)}<span class="role">${esc(m.role||'')}</span></button>`).join('')}</div>
-    <button class="ghost" id="back">← 소위 다시 선택</button>
-  </div></div>`;
-  $('#back').onclick = ()=>{ localStorage.removeItem('sv_member'); renderSubPick(); };
-  appEl.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{
-    state.name = b.dataset.n;
-    localStorage.setItem('sv_member', JSON.stringify({sub:state.sub, name:state.name}));
-    enterMain();
-  });
-}
-
-async function enterMain(){
-  localStorage.setItem('sv_member', JSON.stringify({sub:state.sub, name:state.name}));
-  if (!state.roster){
-    const r = await getDoc(doc(db,'roster',String(state.sub)));
-    state.roster = r.exists() ? r.data() : { members: [] };
-  }
-  $('#heroMeta').innerHTML = `<span class="badge">제${state.sub}소위원회</span>
-    <span class="who">${esc(state.name)} 위원님</span>
-    <button class="exit" id="logout">소위 변경</button>`;
-  $('#logout').onclick = ()=>{ localStorage.removeItem('sv_member'); sessionStorage.removeItem('sv_ok'); location.reload(); };
-
-  // 일정 구독
-  onSnapshot(query(collection(db,'sessions'), where('sub','==',state.sub)), snap=>{
-    state.sessions = snap.docs.map(d=>d.data()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    if (!state.calMonth){
-      const t = todayStr().slice(0,7);
-      const months = [...new Set(state.sessions.map(s=>s.date.slice(0,7)))].sort();
-      state.calMonth = months.includes(t) ? t : (months.find(m=>m>t) || months[months.length-1] || t);
-    }
-    renderMain();
-  });
-  // 출석 구독
-  if (state.unsubA) state.unsubA();
-  state.unsubA = onSnapshot(query(collection(db,'attendance'), where('sub','==',state.sub)), snap=>{
-    state.attendance = {};
-    snap.forEach(d=>{
-      const a = d.data();
-      (state.attendance[a.session] ||= {})[a.name] = a;
-    });
-    renderMain();
-  });
-}
-
-function calHTML(){
-  const [y,m] = state.calMonth.split('-').map(Number);
-  const first = new Date(y, m-1, 1), start = first.getDay();
-  const dim = new Date(y, m, 0).getDate();
-  const byDate = {};
-  state.sessions.forEach(s=>{ (byDate[s.date] ||= []).push(s); });
-  const tstr = todayStr();
-  let cells = '<div class="dowh">일</div><div class="dowh">월</div><div class="dowh">화</div><div class="dowh">수</div><div class="dowh">목</div><div class="dowh">금</div><div class="dowh">토</div>';
-  for (let i=0;i<start;i++) cells += '<div class="day dim"></div>';
-  for (let d=1; d<=dim; d++){
-    const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const ss = (byDate[ds]||[]).filter(s=>!s.cancelled);
-    const dots = ss.map(s=>{
-      const my = state.attendance[s.id]?.[state.name];
-      const cls = my ? STATUS[my.status]||'' : '';
-      return `<span class="dot ${cls}"></span>`;
-    }).join('');
-    cells += `<div class="day ${ss.length?'has':''} ${ds===tstr?'today':''}" ${ss.length?`data-d="${ds}"`:''}>${d}${ss.length?`<div class="dots">${dots}</div>`:''}</div>`;
-  }
-  return `<div class="cal">
-    <div class="cal-head">
-      <button id="pm" aria-label="이전 달">‹</button>
-      <div class="title">${y}년 ${m}월</div>
-      <button id="nm" aria-label="다음 달">›</button>
-    </div>
-    <div class="cal-grid">${cells}</div>
-    <div class="legend">
-      <span><span class="dot"></span>미응답</span>
-      <span><span class="dot ok"></span>출석</span>
-      <span><span class="dot no"></span>불출석</span>
-      <span><span class="dot hold"></span>미정</span>
-    </div>
-  </div>`;
-}
-
-function quorumHTML(s){
-  const members = (state.roster.members||[]).map(m=>m.name);
-  const total = members.length || 7;
-  const att = state.attendance[s.id] || {};
-  let ok=0, no=0, hold=0;
-  members.forEach(n=>{
-    const st = att[n]?.status;
-    if (st==='출석') ok++; else if (st==='불출석') no++; else if (st==='미정') hold++;
-  });
-  const q = state.cfg.quorum || 4;
-  let cells='';
-  for (let i=0;i<total;i++){
-    cells += `<div class="q-cell ${i<ok?'ok': i<ok+no?'no': i<ok+no+hold?'hold':''}"></div>`;
-  }
-  let label, cls;
-  if (ok>=q){ label=`정족수 충족 ${ok}/${total}`; cls='met'; }
-  else if (total-no < q){ label=`정족수 미달 위험 · 불출석 ${no}`; cls='risk'; }
-  else { label=`출석 ${ok}/${total} · ${q}명 필요`; cls='wait'; }
-  return `<div class="quorum"><div class="q-row"><div class="q-cells">${cells}</div><div class="q-label ${cls}">${label}</div></div></div>`;
-}
-
-function sessHTML(s){
-  const my = state.attendance[s.id]?.[state.name];
-  const st = my?.status || '';
-  const [y,m,d] = s.date.split('-');
-  const dateTxt = `${parseInt(m)}/${parseInt(d)}(${s.dow||''})`;
-  const showReason = st==='불출석';
-  const members = state.roster.members || [];
-  const att = state.attendance[s.id] || {};
-  const detail = members.map(mm=>{
-    const a = att[mm.name];
-    const cls = a ? STATUS[a.status] : 'none';
-    return `<div class="mline"><span class="nm">${mm.chair?'★ ':''}${esc(mm.name)}</span>
-      <span>${a?.reason?`<span class="rs">${esc(a.reason)} · </span>`:''}<span class="st ${cls}">${a?esc(a.status):'미응답'}</span></span></div>`;
-  }).join('');
-  return `<div class="sess ${s.cancelled?'cancelled':''}" data-id="${s.id}">
-    <div class="top">
-      <span class="date">${dateTxt}</span><span class="time">${esc(s.time)}</span>
-      ${s.room?`<span class="room">${esc(s.room)}</span>`:''}
-      <span class="no">${esc(s.simui)}</span>
-    </div>
-    <div class="school">${s.cancelled?'<span class="cx">취소</span>':''}${esc(s.school)}</div>
-    ${s.cancelled ? '' : quorumHTML(s) + `
-    <div class="myrow">
-      <button data-st="출석" class="${st==='출석'?'on-ok':''}">출석</button>
-      <button data-st="불출석" class="${st==='불출석'?'on-no':''}">불출석</button>
-      <button data-st="미정" class="${st==='미정'?'on-hold':''}">미정</button>
-    </div>
-    <div class="reason ${showReason?'show':''}">
-      ${REASONS.map(r=>`<button data-r="${r}" class="${my?.reason===r||(r==='기타'&&my?.reason&&!REASONS.slice(0,2).includes(my.reason))?'on':''}">${r}</button>`).join('')}
-      <input type="text" placeholder="기타 사유 입력 (선택)" data-ri value="${my?.reason&&!REASONS.slice(0,2).includes(my.reason)&&my.reason!=='기타'?esc(my.reason):''}">
-    </div>
-    <button class="detail-toggle">위원별 응답 현황 보기 ▾</button>
-    <div class="detail">${detail}</div>`}
-  </div>`;
-}
-
-function renderMain(){
-  const t = todayStr();
-  const upcoming = state.sessions.filter(s=>s.date>=t);
-  const past = state.sessions.filter(s=>s.date<t).slice(-6).reverse();
-  appEl.innerHTML = calHTML()
-    + (upcoming.length ? `<div class="sec-label">다가오는 심의</div><div class="list">${upcoming.map(sessHTML).join('')}</div>`
-                       : `<div class="empty">예정된 심의 일정이 아직 등록되지 않았습니다.</div>`)
-    + (past.length ? `<div class="sec-label">지난 심의</div><div class="list">${past.map(sessHTML).join('')}</div>` : '');
-  bindMain();
-}
-
-function bindMain(){
-  const months = [...new Set(state.sessions.map(s=>s.date.slice(0,7)))].sort();
-  $('#pm')?.addEventListener('click', ()=>{ shiftMonth(-1); });
-  $('#nm')?.addEventListener('click', ()=>{ shiftMonth(1); });
-  function shiftMonth(dir){
-    let [y,m] = state.calMonth.split('-').map(Number);
-    m += dir; if (m<1){m=12;y--;} if(m>12){m=1;y++;}
-    state.calMonth = `${y}-${String(m).padStart(2,'0')}`;
-    renderMain();
-  }
-  appEl.querySelectorAll('.day.has').forEach(el=>el.onclick=()=>{
-    const card = appEl.querySelector(`.sess[data-id]`);
-    const target = [...appEl.querySelectorAll('.sess')].find(c=>{
-      const s = state.sessions.find(x=>x.id===c.dataset.id);
-      return s && s.date===el.dataset.d;
-    });
-    target?.scrollIntoView({behavior:'smooth', block:'center'});
-  });
-  appEl.querySelectorAll('.sess').forEach(card=>{
-    const id = card.dataset.id;
-    card.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>save(id, b.dataset.st, null, card));
-    card.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{
-      const inp = card.querySelector('[data-ri]');
-      const r = b.dataset.r==='기타' ? (inp.value.trim()||'기타') : b.dataset.r;
-      save(id, '불출석', r, card);
-    });
-    const inp = card.querySelector('[data-ri]');
-    inp?.addEventListener('change', ()=>{ if(inp.value.trim()) save(id,'불출석',inp.value.trim(),card); });
-    const tg = card.querySelector('.detail-toggle');
-    tg?.addEventListener('click', ()=>card.querySelector('.detail').classList.toggle('show'));
-  });
-}
-
-async function save(sessionId, status, reason, card){
-  const prev = state.attendance[sessionId]?.[state.name];
-  const finalReason = status==='불출석' ? (reason ?? prev?.reason ?? '') : '';
-  const docId = `${sessionId}_${state.sub}_${state.name}`;
-  try {
-    await setDoc(doc(db,'attendance',docId), {
-      session: sessionId, sub: state.sub, name: state.name,
-      status, reason: finalReason, ts: serverTimestamp(),
-    });
-    toast(status==='불출석' ? '불출석으로 저장되었습니다' : `${status}으로 저장되었습니다`);
-  } catch(e){
-    toast('저장 실패 — 네트워크를 확인하세요');
-  }
-}
-
-boot();
-</script>
+  <a class="adminlink" href="admin.html">관리자 페이지</a>
+  <div class="foot">문의: 화성오산교육지원청 생활교육과</div>
+</div>
 </body>
 </html>
