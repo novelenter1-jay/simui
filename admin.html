@@ -144,6 +144,7 @@ td[contenteditable]{background:#FFFDF2}
     <div class="panel tabview hide" id="t-cfg">
       <h2>설정</h2>
       <div class="row">정족수(출석 필요 인원): <input class="field" id="quorum" type="number" min="1" max="7" style="width:80px" value="4"> 명</div>
+      <div class="row">간사용 현황판(board.html) 코드: <input class="field" id="gansaCode" type="text" style="width:200px" placeholder="예: 제로센터2026" autocomplete="off"><span class="small">비우면 소위 코드로도 입장 가능</span></div>
       <div class="row" style="align-items:flex-start">하단 안내문(간사 성함·연락처 등):<br></div>
       <textarea class="field" id="contact" style="width:100%;min-height:70px" placeholder="예) 문의: 생활교육과 학교폭력제로센터 031-000-0000"></textarea>
       <div class="row"><button class="primary" id="saveCfg">설정 저장</button></div>
@@ -165,7 +166,7 @@ const firebaseConfig = {
   projectId: "simui-attend",
   storageBucket: "simui-attend.firebasestorage.app",
   messagingSenderId: "430424190125",
-  appId: "1:430424190125:web:f61e98821df18639ca2a24"
+  appId: "1:430424190125:web:f61e98821df18639ca2a24
 };
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -390,10 +391,14 @@ $('#range').onchange = loadBoard;
 async function loadCfg(){
   const pub = await getDoc(doc(db,'config','public'));
   if (pub.exists()){ const d=pub.data(); $('#quorum').value=d.quorum||4; $('#contact').value=d.contact||''; }
+  $('#gansaCode').value = localStorage.getItem('sv_gansa_code') || '';
 }
 $('#saveCfg').onclick = async ()=>{
   try {
-    await setDoc(doc(db,'config','public'), { quorum: parseInt($('#quorum').value,10)||4, contact: $('#contact').value.trim() }, { merge:true });
+    const gc = $('#gansaCode').value.trim();
+    const patch = { quorum: parseInt($('#quorum').value,10)||4, contact: $('#contact').value.trim() };
+    if (gc){ patch.gansaHash = await sha256(gc); localStorage.setItem('sv_gansa_code', gc); }
+    await setDoc(doc(db,'config','public'), patch, { merge:true });
     $('#cfgMsg').textContent='저장 완료'; $('#cfgMsg').className='msg ok';
   } catch(e){ $('#cfgMsg').textContent='저장 실패: '+e.message; $('#cfgMsg').className='msg err'; }
 };
