@@ -254,7 +254,8 @@ async function enterMain(){
 
   // 일정 구독
   onSnapshot(query(collection(db,'sessions'), where('sub','==',state.sub)), snap=>{
-    state.sessions = snap.docs.map(d=>d.data()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    const t = todayStr();
+    state.sessions = snap.docs.map(d=>d.data()).filter(s=>s.date>=t).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
     if (!state.calMonth){
       const t = todayStr().slice(0,7);
       const months = [...new Set(state.sessions.map(s=>s.date.slice(0,7)))].sort();
@@ -369,13 +370,10 @@ function sessHTML(s){
 }
 
 function renderMain(){
-  const t = todayStr();
-  const upcoming = state.sessions.filter(s=>s.date>=t);
-  const past = state.sessions.filter(s=>s.date<t).slice(-6).reverse();
+  const upcoming = state.sessions; // 오늘 이후 건만 구독 단계에서 필터됨
   appEl.innerHTML = calHTML()
     + (upcoming.length ? `<div class="sec-label">다가오는 심의</div><div class="list">${upcoming.map(sessHTML).join('')}</div>`
-                       : `<div class="empty">예정된 심의 일정이 아직 등록되지 않았습니다.</div>`)
-    + (past.length ? `<div class="sec-label">지난 심의</div><div class="list">${past.map(sessHTML).join('')}</div>` : '');
+                       : `<div class="empty">예정된 심의 일정이 아직 등록되지 않았습니다.</div>`);
   bindMain();
 }
 
