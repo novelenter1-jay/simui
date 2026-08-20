@@ -155,8 +155,9 @@ async function tryCode(){
   const v = $('#code').value.trim();
   if (!v) return;
   const h = await sha256(v);
-  const ok = (cfg.gansaHash && h===cfg.gansaHash)
-          || Object.values(cfg.codeHash||{}).includes(h); // 간사 코드 미설정 시 소위 코드로도 입장 가능
+  const ok = cfg.gansaHash
+          ? h===cfg.gansaHash                                // 간사 코드가 설정되면 그 코드로만 입장
+          : Object.values(cfg.codeHash||{}).includes(h);     // 미설정일 때만 소위 코드 허용(임시)
   if (!ok){ $('#err').textContent = '코드가 일치하지 않습니다.'; return; }
   sessionStorage.setItem('sv_gansa','1');
   enter();

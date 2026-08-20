@@ -350,7 +350,7 @@ function sessHTML(s){
       ${s.room?`<span class="room">${esc(s.room)}</span>`:''}
       <span class="no">${esc(s.simui)}</span>
     </div>
-    <div class="school">${s.cancelled?'<span class="cx">취소</span>':''}${esc(s.school)}</div>
+    <div class="school">${s.cancelled?'<span class="cx">취소</span>':''}${esc(String(s.school).replace(/\s*\(\s*\d+\s*명\s*\)/g,''))}</div>
     ${s.cancelled ? '' : `
     <div class="myrow ${locked?'locked':''}">
       <button data-st="출석" ${locked?'disabled':''} class="${st==='출석'?'on-ok':''}">출석</button>
