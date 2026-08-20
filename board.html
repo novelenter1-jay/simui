@@ -220,7 +220,7 @@ function render(){
     if (ss.length){
       const cs = ss.map(calc);
       dayCls = cs.some(c=>c.risk) ? 'riskday' : (cs.every(c=>c.met) ? 'met' : 'warn');
-      hasPending = cs.some(c=>c.none.length>0);
+      hasPending = cs.some(c=>c.none.length>0 || c.hold.length>0); // 미응답·미정 모두 챙길 대상
     }
     cells += `<div class="cday ${ss.length?'has '+dayCls:''} ${ds===t?'today':''} ${ds===selDate?'sel':''}" ${ss.length?`data-d="${ds}"`:''}>${d}${hasPending?'<span class="pdot" title="미응답 위원 있음"></span>':''}${ss.length?`<div class="cnt">${ss.length}건</div>`:''}</div>`;
   }
@@ -279,7 +279,7 @@ function render(){
         <span><i style="background:var(--ok-soft);border:1px solid #BFE3CD"></i>전건 충족</span>
         <span><i style="background:var(--hold-soft);border:1px solid #EAD3A8"></i>확인 중 포함</span>
         <span><i style="background:var(--no-soft);border:1px solid #F0C4C0"></i>미달 위험 포함</span>
-        <span><i style="background:#8A94A8;border-radius:99px"></i>미응답 위원 있음</span>
+        <span><i style="background:#8A94A8;border-radius:99px"></i>미응답·미정 위원 있음</span>
       </div>
     </div>
     <div id="dayDetail">${detail}</div>`;

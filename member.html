@@ -342,7 +342,8 @@ function sessHTML(s){
   const [y,m,d] = s.date.split('-');
   const dateTxt = `${parseInt(m)}/${parseInt(d)}(${s.dow||''})`;
   const showReason = st==='불출석';
-  const locked = daysUntil(s.date) < LOCK_DAYS && !!my; // 마감 후에도 첫 입력은 가능, 변경만 잠금
+  const near = daysUntil(s.date) < LOCK_DAYS;
+  const locked = near && !!my && my.status !== '미정'; // 첫 입력·미정 확정은 마감 후에도 가능
   return `<div class="sess ${s.cancelled?'cancelled':''}" data-id="${s.id}" ${locked?'data-locked="1"':''}>
     <div class="top">
       <span class="date">${dateTxt}</span><span class="time">${esc(s.time)}</span>
@@ -356,7 +357,7 @@ function sessHTML(s){
       <button data-st="불출석" ${locked?'disabled':''} class="${st==='불출석'?'on-no':''}">불출석</button>
       <button data-st="미정" ${locked?'disabled':''} class="${st==='미정'?'on-hold':''}">미정</button>
     </div>
-    ${locked ? `<div class="lockmsg">변경 마감(심의 ${LOCK_DAYS}일 전) — 부득이 변경이 필요하시면 간사에게 연락해 주세요.</div>` : `
+    ${locked ? `<div class="lockmsg">변경 마감(심의 ${LOCK_DAYS}일 전) — 부득이 변경이 필요하시면 간사에게 연락해 주세요.</div>` : (near && st==='미정' ? `<div class="lockmsg">심의가 임박했습니다 — 출석/불출석으로 확정해 주세요.</div>` : '') + `
     <div class="reason ${showReason?'show':''}">
       ${REASONS.map(r=>`<button data-r="${r}" class="${my?.reason===r||(r==='기타'&&my?.reason&&!REASONS.slice(0,2).includes(my.reason))?'on':''}">${r}</button>`).join('')}
       <input type="text" placeholder="기타 사유 입력 (선택)" data-ri value="${my?.reason&&!REASONS.slice(0,2).includes(my.reason)&&my.reason!=='기타'?esc(my.reason):''}">
