@@ -382,8 +382,29 @@ async function loadBoard(){
         <td>${esc(s.simui)}</td><td>${esc(s.school)}</td>
         <td class="stat-ok">${ok.length}</td><td class="stat-no">${no.length}</td><td class="stat-hold">${hold.length}</td><td>${none.length}</td>
         <td>${verdict}</td><td class="small">${no.map(n=>esc(n)+(a[n].reason?`(${esc(a[n].reason)})`:'')).join(', ')}</td>
-        <td><button class="ghostbtn" style="padding:4px 10px;font-size:12px" data-reset="${s.id}" data-sub="${s.sub}">응답 초기화</button></td></tr>`;
+        <td style="white-space:nowrap"><button class="ghostbtn" style="padding:4px 10px;font-size:12px" data-setresp="${s.id}" data-sub="${s.sub}">응답 변경</button>
+        <button class="ghostbtn" style="padding:4px 10px;font-size:12px" data-reset="${s.id}" data-sub="${s.sub}">초기화</button></td></tr>`;
     }).join('') + '</tbody></table>';
+  $('#board').querySelectorAll('[data-setresp]').forEach(b=>b.onclick=async ()=>{
+    const sid = b.dataset.setresp, sub = parseInt(b.dataset.sub,10);
+    const roster = rosters[sub];
+    const names = (roster?.members||[]).map(m=>m.name);
+    const name = prompt(`응답을 변경(대리 입력)할 위원 성함을 입력하세요.\n\n${sub}소위 위원: ${names.join(', ')}`);
+    if (!name) return;
+    const nm = name.trim();
+    if (names.length && !names.includes(nm)){ alert(`'${nm}'은(는) ${sub}소위 명단에 없습니다.`); return; }
+    const stIn = prompt(`'${nm}' 위원의 상태를 입력하세요: 출석 / 불출석 / 미정`);
+    if (!stIn) return;
+    const status = stIn.trim();
+    if (!['출석','불출석','미정'].includes(status)){ alert('출석 / 불출석 / 미정 중 하나로 입력하세요.'); return; }
+    let reason = '';
+    if (status==='불출석'){ reason = (prompt('불출석 사유 (예: 기피(회피) 사유 / 개인 일정, 없으면 빈칸)')||'').trim(); }
+    try {
+      await setDoc(doc(db,'attendance',`${sid}_${sub}_${nm}`), { session: sid, sub, name: nm, status, reason, ts: serverTimestamp() });
+      alert(`저장되었습니다: ${nm} → ${status}${reason?` (${reason})`:''}`);
+      loadBoard();
+    } catch(e){ alert('저장 실패: '+e.message); }
+  });
   $('#board').querySelectorAll('[data-reset]').forEach(b=>b.onclick=async ()=>{
     const sid = b.dataset.reset, sub = b.dataset.sub;
     const resp = Object.keys(att[sid]||{});

@@ -97,6 +97,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highl
 .reason button{border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--sub)}
 .reason button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .reason input{flex:1;min-width:120px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px}
+.myrow.locked button{opacity:.55}
+.lockmsg{margin-top:8px;font-size:12px;font-weight:700;color:var(--hold);background:var(--hold-soft);border-radius:9px;padding:8px 12px}
 /* 전체 현황 토글 */
 .detail-toggle{margin-top:10px;font-size:12px;font-weight:700;color:var(--teal);padding:4px 0}
 .detail{display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:10px}
@@ -328,39 +330,37 @@ function quorumHTML(s){
   return `<div class="quorum"><div class="q-row"><div class="q-cells">${cells}</div><div class="q-label ${cls}">${label}</div></div></div>`;
 }
 
+const LOCK_DAYS = 3; // 심의 3일 전까지만 변경 가능
+function daysUntil(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const t = new Date(); const today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  return Math.round((new Date(y, m-1, d) - today) / 86400000);
+}
 function sessHTML(s){
   const my = state.attendance[s.id]?.[state.name];
   const st = my?.status || '';
   const [y,m,d] = s.date.split('-');
   const dateTxt = `${parseInt(m)}/${parseInt(d)}(${s.dow||''})`;
   const showReason = st==='불출석';
-  const members = state.roster.members || [];
-  const att = state.attendance[s.id] || {};
-  const detail = members.map(mm=>{
-    const a = att[mm.name];
-    const cls = a ? STATUS[a.status] : 'none';
-    return `<div class="mline"><span class="nm">${mm.chair?'★ ':''}${esc(mm.name)}</span>
-      <span>${a?.reason?`<span class="rs">${esc(a.reason)} · </span>`:''}<span class="st ${cls}">${a?esc(a.status):'미응답'}</span></span></div>`;
-  }).join('');
-  return `<div class="sess ${s.cancelled?'cancelled':''}" data-id="${s.id}">
+  const locked = daysUntil(s.date) < LOCK_DAYS && !!my; // 마감 후에도 첫 입력은 가능, 변경만 잠금
+  return `<div class="sess ${s.cancelled?'cancelled':''}" data-id="${s.id}" ${locked?'data-locked="1"':''}>
     <div class="top">
       <span class="date">${dateTxt}</span><span class="time">${esc(s.time)}</span>
       ${s.room?`<span class="room">${esc(s.room)}</span>`:''}
       <span class="no">${esc(s.simui)}</span>
     </div>
     <div class="school">${s.cancelled?'<span class="cx">취소</span>':''}${esc(s.school)}</div>
-    ${s.cancelled ? '' : quorumHTML(s) + `
-    <div class="myrow">
-      <button data-st="출석" class="${st==='출석'?'on-ok':''}">출석</button>
-      <button data-st="불출석" class="${st==='불출석'?'on-no':''}">불출석</button>
-      <button data-st="미정" class="${st==='미정'?'on-hold':''}">미정</button>
+    ${s.cancelled ? '' : `
+    <div class="myrow ${locked?'locked':''}">
+      <button data-st="출석" ${locked?'disabled':''} class="${st==='출석'?'on-ok':''}">출석</button>
+      <button data-st="불출석" ${locked?'disabled':''} class="${st==='불출석'?'on-no':''}">불출석</button>
+      <button data-st="미정" ${locked?'disabled':''} class="${st==='미정'?'on-hold':''}">미정</button>
     </div>
+    ${locked ? `<div class="lockmsg">변경 마감(심의 ${LOCK_DAYS}일 전) — 부득이 변경이 필요하시면 간사에게 연락해 주세요.</div>` : `
     <div class="reason ${showReason?'show':''}">
       ${REASONS.map(r=>`<button data-r="${r}" class="${my?.reason===r||(r==='기타'&&my?.reason&&!REASONS.slice(0,2).includes(my.reason))?'on':''}">${r}</button>`).join('')}
       <input type="text" placeholder="기타 사유 입력 (선택)" data-ri value="${my?.reason&&!REASONS.slice(0,2).includes(my.reason)&&my.reason!=='기타'?esc(my.reason):''}">
-    </div>
-    <button class="detail-toggle">위원별 응답 현황 보기 ▾</button>
-    <div class="detail">${detail}</div>`}
+    </div>`}`}
   </div>`;
 }
 
@@ -395,6 +395,7 @@ function bindMain(){
   });
   appEl.querySelectorAll('.sess').forEach(card=>{
     const id = card.dataset.id;
+    if (card.dataset.locked) return; // 변경 마감된 카드는 조작 불가
     card.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>save(id, b.dataset.st, null, card));
     card.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{
       const inp = card.querySelector('[data-ri]');
@@ -403,8 +404,6 @@ function bindMain(){
     });
     const inp = card.querySelector('[data-ri]');
     inp?.addEventListener('change', ()=>{ if(inp.value.trim()) save(id,'불출석',inp.value.trim(),card); });
-    const tg = card.querySelector('.detail-toggle');
-    tg?.addEventListener('click', ()=>card.querySelector('.detail').classList.toggle('show'));
   });
 }
 

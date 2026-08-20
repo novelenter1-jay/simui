@@ -46,6 +46,8 @@ button{font:inherit;cursor:pointer;border:none;background:none;-webkit-tap-highl
 .cday.has.riskday{background:var(--no-soft)}
 .cday.sel{border-color:var(--navy);background:var(--navy)!important;color:#fff}
 .cday .cnt{position:absolute;bottom:3px;left:0;right:0;font-size:10px;font-weight:800;color:var(--sub)}
+.cday .pdot{position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:99px;background:#8A94A8;border:1.5px solid #fff}
+.cday.sel .pdot{background:#fff;border-color:var(--navy)}
 .cday.met .cnt{color:var(--ok)} .cday.warn .cnt{color:var(--hold)} .cday.riskday .cnt{color:var(--no)} .cday.sel .cnt{color:#fff}
 .callegend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--sub);flex-wrap:wrap}
 .callegend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-2px}
@@ -214,12 +216,13 @@ function render(){
   for (let d=1; d<=dim; d++){
     const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const ss = byDate[ds] || [];
-    let dayCls = '';
+    let dayCls = '', hasPending = false;
     if (ss.length){
       const cs = ss.map(calc);
       dayCls = cs.some(c=>c.risk) ? 'riskday' : (cs.every(c=>c.met) ? 'met' : 'warn');
+      hasPending = cs.some(c=>c.none.length>0);
     }
-    cells += `<div class="cday ${ss.length?'has '+dayCls:''} ${ds===t?'today':''} ${ds===selDate?'sel':''}" ${ss.length?`data-d="${ds}"`:''}>${d}${ss.length?`<div class="cnt">${ss.length}건</div>`:''}</div>`;
+    cells += `<div class="cday ${ss.length?'has '+dayCls:''} ${ds===t?'today':''} ${ds===selDate?'sel':''}" ${ss.length?`data-d="${ds}"`:''}>${d}${hasPending?'<span class="pdot" title="미응답 위원 있음"></span>':''}${ss.length?`<div class="cnt">${ss.length}건</div>`:''}</div>`;
   }
 
   // 선택 날짜 상세
@@ -276,6 +279,7 @@ function render(){
         <span><i style="background:var(--ok-soft);border:1px solid #BFE3CD"></i>전건 충족</span>
         <span><i style="background:var(--hold-soft);border:1px solid #EAD3A8"></i>확인 중 포함</span>
         <span><i style="background:var(--no-soft);border:1px solid #F0C4C0"></i>미달 위험 포함</span>
+        <span><i style="background:#8A94A8;border-radius:99px"></i>미응답 위원 있음</span>
       </div>
     </div>
     <div id="dayDetail">${detail}</div>`;
